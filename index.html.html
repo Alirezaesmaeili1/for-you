@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>با من میای سر قرار؟ 💕</title>
+  
+  <!-- فونت وزیرمتن برای تایپوگرافی استاندارد و زیبای فارسی -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  
+  <!-- بارگذاری Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <style>
+    * {
+      font-family: 'Vazirmatn', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: linear-gradient(135deg, #fce4ec 0%, #f3e5f5 50%, #f8bbd0 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* انیمیشن قلب‌ها و گلبرگ‌های شناور در پس‌زمینه */
+    .floating-heart {
+      position: fixed;
+      bottom: -40px;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.45;
+      animation: floatUp linear forwards;
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translateY(0) rotate(0deg) scale(0.8);
+        opacity: 0;
+      }
+      15% {
+        opacity: 0.5;
+      }
+      85% {
+        opacity: 0.4;
+      }
+      100% {
+        transform: translateY(-110vh) rotate(360deg) scale(1.2);
+        opacity: 0;
+      }
+    }
+
+    /* انیمیشن شناور نرم برای ایموجی بالای کارت */
+    @keyframes gentleBounce {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+
+    .emoji-bounce {
+      display: inline-block;
+      animation: gentleBounce 2.4s ease-in-out infinite;
+    }
+
+    /* انیمیشن ورود نرم هر مرحله */
+    @keyframes fadeSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.97);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .step-animate {
+      animation: fadeSlideIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* استایل دکمه اصلی صورتی سرخابی */
+    .btn-magenta {
+      background: linear-gradient(135deg, #d81b60 0%, #ec407a 100%);
+      box-shadow: 0 10px 25px -5px rgba(216, 27, 96, 0.45);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .btn-magenta:hover:not(:disabled) {
+      box-shadow: 0 14px 30px -4px rgba(216, 27, 96, 0.6);
+      filter: brightness(1.05);
+    }
+
+    .btn-magenta:active:not(:disabled) {
+      transform: scale(0.96);
+    }
+
+    .btn-magenta:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* استایل کارت‌های انتخاب غذا */
+    .food-card {
+      transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .food-card.selected {
+      border-color: #d81b60;
+      background-color: #fce4ec;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px -6px rgba(216, 27, 96, 0.25);
+    }
+
+    /* استایل ورودی‌های تاریخ و ساعت */
+    input[type="date"],
+    input[type="time"] {
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    /* کنفتی جشن مرحله آخر */
+    .confetti-piece {
+      position: fixed;
+      top: -20px;
+      z-index: 50;
+      pointer-events: none;
+      animation: confettiFall linear forwards;
+    }
+
+    @keyframes confettiFall {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(105vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center p-4 sm:p-6">
+
+  <!-- کانتینر قلب‌های شناور پس‌زمینه -->
+  <div id="hearts-container" aria-hidden="true"></div>
+
+  <!-- کارت اصلی وسط صفحه -->
+  <main class="relative z-10 w-full max-w-md bg-white/95 backdrop-blur-md rounded-3xl shadow-[0_20px_50px_rgba(194,24,91,0.16)] border border-pink-100 p-6 sm:p-8 text-center transition-all duration-300">
+    
+    <!-- نشانگر مراحل (نقطه‌های بالای کارت) -->
+    <div class="flex items-center justify-center gap-2 mb-6" aria-label="مراحل دعوت">
+      <span id="dot-1" class="h-2 w-7 rounded-full bg-pink-600 transition-all duration-300"></span>
+      <span id="dot-2" class="h-2 w-2 rounded-full bg-pink-200 transition-all duration-300"></span>
+      <span id="dot-3" class="h-2 w-2 rounded-full bg-pink-200 transition-all duration-300"></span>
+      <span id="dot-4" class="h-2 w-2 rounded-full bg-pink-200 transition-all duration-300"></span>
+    </div>
+
+    <!-- ==================== مرحله ۱: سوال اصلی ==================== -->
+    <section id="step-1" class="step-animate">
+      <div class="text-6xl mb-4 emoji-bounce select-none">🥺</div>
+      
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-800 mb-3 tracking-tight">
+        با من میای سر قرار؟
+      </h1>
+      
+      <p class="text-sm sm:text-base text-gray-500 mb-8 leading-relaxed">
+        فقط یه سوال ساده‌ست... جواب درست هم فقط یکیشه 😉
+      </p>
+
+      <!-- دکمه‌های آره و نه -->
+      <div id="buttons-wrapper" class="flex flex-wrap items-center justify-center gap-4 min-h-[90px] mb-5">
+        <button
+          id="btn-yes"
+          type="button"
+          class="btn-magenta text-white font-bold rounded-2xl px-8 py-3.5 text-lg flex items-center justify-center gap-2 cursor-pointer select-none"
+        >
+          <span>آره</span>
+          <span>💕</span>
+        </button>
+
+        <button
+          id="btn-no"
+          type="button"
+          class="bg-gray-100 hover:bg-gray-200 text-gray-600 font-semibold rounded-2xl px-6 py-3.5 text-base transition-all duration-300 cursor-pointer select-none"
+        >
+          نه
+        </button>
+      </div>
+
+      <!-- متن راهنمای پویا با هر بار کلیک روی نه -->
+      <p id="no-helper-text" class="text-xs sm:text-sm font-medium text-pink-600 min-h-[24px] transition-all duration-300"></p>
+    </section>
+
+    <!-- ==================== مرحله ۲: انتخاب تاریخ و ساعت ==================== -->
+    <section id="step-2" class="hidden">
+      <div class="text-5xl sm:text-6xl mb-4 emoji-bounce select-none">📅</div>
+      
+      <h2 class="text-2xl font-extrabold text-gray-800 mb-2">
+        کی وقت داری؟
+      </h2>
+      
+      <p class="text-sm text-gray-500 mb-6">
+        یه تاریخ و ساعت خوب برام انتخاب کن
+      </p>
+
+      <div class="space-y-4 text-right mb-7">
+        <!-- انتخاب تاریخ -->
+        <div>
+          <label for="date-input" class="block text-sm font-bold text-gray-700 mb-1.5 mr-1">
+            تاریخ
+          </label>
+          <input
+            id="date-input"
+            type="date"
+            class="w-full rounded-2xl border-2 border-pink-100 bg-pink-50/40 px-4 py-3.5 text-gray-800 font-semibold text-center focus:border-pink-500 focus:bg-white focus:outline-none transition-colors"
+          />
+          <p id="persian-date-preview" class="text-xs text-pink-600 font-medium mt-1.5 mr-1"></p>
+        </div>
+
+        <!-- انتخاب ساعت -->
+        <div>
+          <label for="time-input" class="block text-sm font-bold text-gray-700 mb-1.5 mr-1">
+            ساعت
+          </label>
+          <input
+            id="time-input"
+            type="time"
+            value="20:00"
+            class="w-full rounded-2xl border-2 border-pink-100 bg-pink-50/40 px-4 py-3.5 text-gray-800 font-semibold text-center focus:border-pink-500 focus:bg-white focus:outline-none transition-colors"
+          />
+        </div>
+      </div>
+
+      <!-- پیام خطای اعتبارسنجی در صورت خالی بودن -->
+      <p id="step2-error" class="text-xs text-rose-600 font-medium mb-3 hidden">
+        لطفاً هم تاریخ و هم ساعت رو انتخاب کن 🌸
+      </p>
+
+      <button
+        id="btn-to-step-3"
+        type="button"
+        class="btn-magenta w-full text-white font-bold rounded-2xl py-3.5 text-base sm:text-lg flex items-center justify-center gap-2 cursor-pointer"
+      >
+        <span>بعدی</span>
+        <span>✨</span>
+      </button>
+    </section>
+
+    <!-- ==================== مرحله ۳: انتخاب غذا ==================== -->
+    <section id="step-3" class="hidden">
+      <div class="text-5xl sm:text-6xl mb-4 emoji-bounce select-none">🍽️</div>
+      
+      <h2 class="text-2xl font-extrabold text-gray-800 mb-2">
+        چی سفارش میدی؟
+      </h2>
+      
+      <p class="text-sm text-gray-500 mb-6">
+        یه چیز خوشمزه انتخاب کن که مهمونت باشم
+      </p>
+
+      <!-- شبکه ۲ در ۲ گزینه‌های غذا -->
+      <div class="grid grid-cols-2 gap-3.5 mb-7" role="radiogroup" aria-label="انتخاب غذا">
+        <!-- گزینه ۱: قهوه -->
+        <button
+          type="button"
+          data-food="قهوه"
+          class="food-card rounded-2xl border-2 border-gray-100 bg-gray-50/70 p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-pink-300"
+        >
+          <span class="text-4xl select-none">☕</span>
+          <span class="font-bold text-gray-800 text-base">قهوه</span>
+        </button>
+
+        <!-- گزینه ۲: پیتزا -->
+        <button
+          type="button"
+          data-food="پیتزا"
+          class="food-card rounded-2xl border-2 border-gray-100 bg-gray-50/70 p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-pink-300"
+        >
+          <span class="text-4xl select-none">🍕</span>
+          <span class="font-bold text-gray-800 text-base">پیتزا</span>
+        </button>
+
+        <!-- گزینه ۳: گوشت (جایگزین کوبیده طبق درخواست کاربر) -->
+        <button
+          type="button"
+          data-food="گوشت"
+          class="food-card rounded-2xl border-2 border-gray-100 bg-gray-50/70 p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-pink-300"
+        >
+          <span class="text-4xl select-none">🥩</span>
+          <span class="font-bold text-gray-800 text-base">گوشت</span>
+        </button>
+
+        <!-- گزینه ۴: پاستا -->
+        <button
+          type="button"
+          data-food="پاستا"
+          class="food-card rounded-2xl border-2 border-gray-100 bg-gray-50/70 p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-pink-300"
+        >
+          <span class="text-4xl select-none">🍝</span>
+          <span class="font-bold text-gray-800 text-base">پاستا</span>
+        </button>
+      </div>
+
+      <button
+        id="btn-to-step-4"
+        type="button"
+        disabled
+        class="btn-magenta w-full text-white font-bold rounded-2xl py-3.5 text-base sm:text-lg flex items-center justify-center gap-2 cursor-pointer"
+      >
+        <span>بزنم که بریم</span>
+        <span>🚀</span>
+      </button>
+    </section>
+
+    <!-- ==================== مرحله ۴: تایید نهایی و جشن ==================== -->
+    <section id="step-4" class="hidden">
+      <div class="text-6xl mb-4 emoji-bounce select-none">🎉</div>
+      
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-800 mb-4">
+        خوشحالم نگفتی نه!
+      </h2>
+
+      <!-- باکس نمایش خلاصه قرار با رنگ صورتی برجسته -->
+      <div class="bg-pink-50/90 border border-pink-200 rounded-2xl p-4 sm:p-5 mb-5">
+        <p id="final-summary-text" class="text-base sm:text-lg font-extrabold text-pink-600 leading-relaxed">
+          <!-- متن داینامیک در جاوااسکریپت پر می‌شود -->
+        </p>
+      </div>
+
+      <p class="text-base sm:text-lg font-bold text-gray-800 mb-6">
+        پس آماده باش، خودم میام دنبالت 🚗❤️
+      </p>
+
+      <!-- دکمه ظریف برای کپی کردن متن قرار جهت ارسال به دعوت‌کننده -->
+      <div class="mb-5">
+        <button
+          id="btn-copy-summary"
+          type="button"
+          class="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-pink-600 bg-pink-50 hover:bg-pink-100 border border-pink-200 rounded-xl px-4 py-2.5 transition-colors cursor-pointer"
+        >
+          <span>کپی متن قرار برای ارسال 📋</span>
+        </button>
+        <p id="copy-feedback" class="text-xs text-emerald-600 font-semibold mt-1.5 h-4 opacity-0 transition-opacity duration-300">
+          متن قرار کپی شد! حالا برام بفرستش 💕
+        </p>
+      </div>
+
+      <!-- پاورقی ظریف و بامزه پایین کارت -->
+      <p class="text-[11px] sm:text-xs text-gray-400 leading-relaxed border-t border-gray-100 pt-4">
+        برای اینکه ازت درخواست کنم یه وبسایت طراحی کردم، چیز مهمی نبود 😎
+      </p>
+    </section>
+
+  </main>
+
+  <script>
+    // =========================================================================
+    // مدیریت وضعیت برنامه (State)
+    // =========================================================================
+    const state = {
+      noClickCount: 0,
+      selectedDate: '',
+      selectedTime: '20:00',
+      selectedFood: ''
+    };
+
+    // پیام‌های بامزه هنگام کلیک روی دکمه «نه»
+    const noMessages = [
+      'مطمئنی؟ 🤔',
+      'فکراتو بکن... 🥺',
+      'دلم به آره داره صدات میزنه 💓',
+      'خب دیگه بسّه، فقط آره رو بزن 😂',
+      'آره همیشه‌ست، منتظرته 💕'
+    ];
+
+    // =========================================================================
+    // ارجاع به المان‌های صفحه
+    // =========================================================================
+    const steps = {
+      1: document.getElementById('step-1'),
+      2: document.getElementById('step-2'),
+      3: document.getElementById('step-3'),
+      4: document.getElementById('step-4')
+    };
+
+    const dots = {
+      1: document.getElementById('dot-1'),
+      2: document.getElementById('dot-2'),
+      3: document.getElementById('dot-3'),
+      4: document.getElementById('dot-4')
+    };
+
+    const btnYes = document.getElementById('btn-yes');
+    const btnNo = document.getElementById('btn-no');
+    const noHelperText = document.getElementById('no-helper-text');
+
+    const dateInput = document.getElementById('date-input');
+    const timeInput = document.getElementById('time-input');
+    const persianDatePreview = document.getElementById('persian-date-preview');
+    const step2Error = document.getElementById('step2-error');
+    const btnToStep3 = document.getElementById('btn-to-step-3');
+
+    const foodCards = document.querySelectorAll('.food-card');
+    const btnToStep4 = document.getElementById('btn-to-step-4');
+
+    const finalSummaryText = document.getElementById('final-summary-text');
+    const btnCopySummary = document.getElementById('btn-copy-summary');
+    const copyFeedback = document.getElementById('copy-feedback');
+
+    // =========================================================================
+    // توابع کمکی تاریخ شمسی و اعداد فارسی
+    // =========================================================================
+    function toPersianDigits(str) {
+      const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+      return String(str).replace(/\d/g, (digit) => persianDigits[digit]);
+    }
+
+    function formatGregorianToPersianDate(dateString) {
+      if (!dateString) return '';
+      try {
+        // ساخت تاریخ بدون مشکل اختلاف منطقه زمانی
+        const [year, month, day] = dateString.split('-').map(Number);
+        const dateObj = new Date(year, month - 1, day, 12, 0, 0);
+        
+        const formatter = new Intl.DateTimeFormat('fa-IR', {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long'
+        });
+        
+        // حذف ویرگول احتمالی برای خوانایی طبیعی‌تر (مثلاً: چهارشنبه ۷ مرداد)
+        return formatter.format(dateObj).replace(/،/g, '');
+      } catch (e) {
+        return dateString;
+      }
+    }
+
+    // تنظیم تاریخ پیش‌فرض روی فردا
+    function initDefaultDate() {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const yyyy = tomorrow.getFullYear();
+      const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+      const dd = String(tomorrow.getDate()).padStart(2, '0');
+      const defaultDateStr = `${yyyy}-${mm}-${dd}`;
+      
+      dateInput.value = defaultDateStr;
+      dateInput.min = new Date().toISOString().split('T')[0];
+      state.selectedDate = defaultDateStr;
+      updateDatePreview();
+    }
+
+    function updateDatePreview() {
+      const formatted = formatGregorianToPersianDate(dateInput.value);
+      persianDatePreview.textContent = formatted ? `معادل: ${formatted}` : '';
+    }
+
+    // =========================================================================
+    // جابجایی بین مراحل
+    // =========================================================================
+    function goToStep(stepNumber) {
+      Object.keys(steps).forEach((key) => {
+        const num = Number(key);
+        if (num === stepNumber) {
+          steps[num].classList.remove('hidden');
+          steps[num].classList.add('step-animate');
+          dots[num].classList.remove('w-2', 'bg-pink-200');
+          dots[num].classList.add('w-7', 'bg-pink-600');
+        } else {
+          steps[num].classList.add('hidden');
+          steps[num].classList.remove('step-animate');
+          dots[num].classList.remove('w-7', 'bg-pink-600');
+          dots[num].classList.add('w-2', 'bg-pink-200');
+        }
+      });
+    }
+
+    // =========================================================================
+    // رویدادهای مرحله ۱ (دکمه‌های آره و نه)
+    // =========================================================================
+    btnNo.addEventListener('click', () => {
+      state.noClickCount += 1;
+
+      // نمایش پیام متناسب با تعداد کلیک‌ها
+      const msgIndex = Math.min(state.noClickCount - 1, noMessages.length - 1);
+      noHelperText.textContent = noMessages[msgIndex];
+
+      // بزرگ‌تر شدن تدریجی دکمه «آره»
+      const scaleYes = Math.min(1 + state.noClickCount * 0.28, 2.5);
+      const paddingX = Math.min(32 + state.noClickCount * 10, 88);
+      const paddingY = Math.min(14 + state.noClickCount * 5, 42);
+      const fontSize = Math.min(18 + state.noClickCount * 3, 34);
+
+      btnYes.style.padding = `${paddingY}px ${paddingX}px`;
+      btnYes.style.fontSize = `${fontSize}px`;
+      btnYes.style.transform = `scale(${Math.min(1 + state.noClickCount * 0.04, 1.15)})`;
+
+      // کوچک‌تر شدن و جابجایی جزئی دکمه «نه»
+      const scaleNo = Math.max(1 - state.noClickCount * 0.12, 0.55);
+      const randomX = (Math.random() - 0.5) * 24;
+      const randomY = (Math.random() - 0.5) * 14;
+      btnNo.style.transform = `translate(${randomX}px, ${randomY}px) scale(${scaleNo})`;
+      btnNo.style.opacity = Math.max(1 - state.noClickCount * 0.12, 0.45);
+    });
+
+    btnYes.addEventListener('click', () => {
+      goToStep(2);
+    });
+
+    // =========================================================================
+    // رویدادهای مرحله ۲ (تاریخ و ساعت)
+    // =========================================================================
+    dateInput.addEventListener('change', () => {
+      state.selectedDate = dateInput.value;
+      step2Error.classList.add('hidden');
+      updateDatePreview();
+    });
+
+    timeInput.addEventListener('change', () => {
+      state.selectedTime = timeInput.value;
+      step2Error.classList.add('hidden');
+    });
+
+    btnToStep3.addEventListener('click', () => {
+      if (!dateInput.value || !timeInput.value) {
+        step2Error.classList.remove('hidden');
+        return;
+      }
+      state.selectedDate = dateInput.value;
+      state.selectedTime = timeInput.value;
+      goToStep(3);
+    });
+
+    // =========================================================================
+    // رویدادهای مرحله ۳ (انتخاب غذا)
+    // =========================================================================
+    foodCards.forEach((card) => {
+      card.addEventListener('click', () => {
+        // حذف حالت انتخاب از همه کارت‌ها
+        foodCards.forEach((c) => c.classList.remove('selected'));
+        // انتخاب کارت فعلی
+        card.classList.add('selected');
+        state.selectedFood = card.getAttribute('data-food');
+        btnToStep4.disabled = false;
+      });
+    });
+
+    btnToStep4.addEventListener('click', () => {
+      if (!state.selectedFood) return;
+
+      const persianDate = formatGregorianToPersianDate(state.selectedDate);
+      const persianTime = toPersianDigits(state.selectedTime);
+
+      // ساخت متن نهایی دقیقاً مطابق ساختار درخواستی
+      const summaryMessage = `پس ${persianDate} ساعت ${persianTime} میام دنبالت، برای ${state.selectedFood} ✨`;
+      finalSummaryText.textContent = summaryMessage;
+
+      goToStep(4);
+      launchCelebrationConfetti();
+    });
+
+    // =========================================================================
+    // کپی کردن متن قرار در مرحله ۴
+    // =========================================================================
+    btnCopySummary.addEventListener('click', () => {
+      const textToCopy = `${finalSummaryText.textContent}\nپس آماده باش، خودم میام دنبالت 🚗❤️`;
+      
+      const tempTextarea = document.createElement('textarea');
+      tempTextarea.value = textToCopy;
+      tempTextarea.style.position = 'fixed';
+      tempTextarea.style.opacity = '0';
+      document.body.appendChild(tempTextarea);
+      tempTextarea.select();
+      
+      try {
+        document.execCommand('copy');
+        copyFeedback.classList.remove('opacity-0');
+        setTimeout(() => {
+          copyFeedback.classList.add('opacity-0');
+        }, 3000);
+      } catch (err) {
+        console.error('Copy failed', err);
+      }
+      
+      document.body.removeChild(tempTextarea);
+    });
+
+    // =========================================================================
+    // انیمیشن قلب‌های شناور پس‌زمینه و کنفتی جشن
+    // =========================================================================
+    function spawnBackgroundHeart() {
+      const container = document.getElementById('hearts-container');
+      const heart = document.createElement('span');
+      const emojis = ['💕', '💖', '💗', '🌸', '💓', '✨'];
+      
+      heart.className = 'floating-heart select-none';
+      heart.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      heart.style.left = `${Math.random() * 100}vw`;
+      heart.style.fontSize = `${14 + Math.random() * 18}px`;
+      
+      const duration = 7 + Math.random() * 6;
+      heart.style.animationDuration = `${duration}s`;
+      
+      container.appendChild(heart);
+      
+      setTimeout(() => {
+        heart.remove();
+      }, duration * 1000);
+    }
+
+    function launchCelebrationConfetti() {
+      const emojis = ['🎉', '💕', '💖', '✨', '🌸', '🥳', '❤️'];
+      for (let i = 0; i < 45; i++) {
+        setTimeout(() => {
+          const piece = document.createElement('span');
+          piece.className = 'confetti-piece select-none';
+          piece.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+          piece.style.left = `${Math.random() * 100}vw`;
+          piece.style.fontSize = `${18 + Math.random() * 16}px`;
+          
+          const duration = 2.5 + Math.random() * 2;
+          piece.style.animationDuration = `${duration}s`;
+          
+          document.body.appendChild(piece);
+          setTimeout(() => piece.remove(), duration * 1000);
+        }, i * 50);
+      }
+    }
+
+    // راه‌اندازی اولیه
+    window.addEventListener('DOMContentLoaded', () => {
+      initDefaultDate();
+      // ایجاد چند قلب اولیه و ادامه به صورت دوره‌ای
+      for (let i = 0; i < 6; i++) {
+        setTimeout(spawnBackgroundHeart, i * 400);
+      }
+      setInterval(spawnBackgroundHeart, 1300);
+    });
+  </script>
+</body>
+</html>
